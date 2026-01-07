@@ -26,8 +26,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     }
 
     const mapUrl = mapping.urlPath.startsWith('/') ? mapping.urlPath : '/' + mapping.urlPath;
-    const relative = pathname.slice(mapUrl.length);
-    
+    let relative = pathname.slice(mapUrl.length);
+    // Remove leading slash to avoid path.join ignoring the base directory
+    if (relative.startsWith('/')) relative = relative.slice(1);
+
     const decodedRelative = decodeURIComponent(relative);
     
     if (decodedRelative.includes('..')) {
@@ -81,6 +83,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
                              "Cache-Control": "public, max-age=31536000",
                          }
                      });
+                 } else {
+                    throw new Response("Not Found", { status: 404 });
                  }
              }
         }
@@ -102,7 +106,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 }
 
 export default function Viewer() {
-    const { files, pathname } = useLoaderData<typeof loader>();
+    const data = useLoaderData<typeof loader>();
+    const files = data?.files ?? [];
+    const pathname = data?.pathname ?? '/';
     
     const join = (base: string, part: string) => {
         return base.endsWith('/') ? base + part : base + '/' + part;
