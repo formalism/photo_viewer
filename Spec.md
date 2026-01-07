@@ -19,6 +19,9 @@
 ## Tech Stack
 - [React Router](https://reactrouter.com/) フレームワークモードで利用
 - [SQLite](https://sqlite.org/) 利用者、URLパス<->ディレクトリ対応管理
+- [DrizzleORM](https://orm.drizzle.team/)
+- [Remix Auth](https://v2.remix.run/resources/remix-auth)
+    - [OAuth2Strategy](https://github.com/sergiodxa/remix-auth-oauth2)
 - [sharp](https://www.npmjs.com/package/sharp) 画像のサムネイルを作成
 - [FFmpeg](https://www.ffmpeg.org/) 動画からサムネイルを作成するために利用。デプロイするサーバにインストールされている前提
 
