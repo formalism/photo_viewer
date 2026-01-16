@@ -1,6 +1,6 @@
 import { createCookieSessionStorage } from "react-router";
 
-const sessionSecret = process.env.SESSION_SECRET;
+const sessionSecret = import.meta.env.VITE_SESSION_SECRET;
 if (!sessionSecret) {
   throw new Error("SESSION_SECRET is required");
 }

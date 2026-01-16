@@ -28,9 +28,9 @@ class GoogleOAuthStrategy extends OAuth2Strategy<AuthUser> {
   }
 }
 
-const clientID = process.env.GOOGLE_CLIENT_ID;
-const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const callbackURL = process.env.GOOGLE_CALLBACK_URL;
+const clientID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const clientSecret = import.meta.env.VITE_GOOGLE_CLIENT_SECRET;
+const callbackURL = import.meta.env.VITE_GOOGLE_CALLBACK_URL;
 
 if (!clientID || !clientSecret || !callbackURL) {
   throw new Error(
