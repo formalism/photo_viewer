@@ -13,8 +13,8 @@ type GoogleProfile = {
   verified_email?: boolean;
 };
 
-class GoogleOAuthStrategy extends OAuth2Strategy<AuthUser, GoogleProfile> {
-  protected async userProfile(accessToken: string): Promise<GoogleProfile> {
+class GoogleOAuthStrategy extends OAuth2Strategy<AuthUser> {
+  public async userProfile(accessToken: string): Promise<GoogleProfile> {
     const response = await fetch(
       "https://www.googleapis.com/oauth2/v3/userinfo",
       {
@@ -38,18 +38,24 @@ if (!clientID || !clientSecret || !callbackURL) {
   );
 }
 
-export const authenticator = new Authenticator<AuthUser>(sessionStorage);
+export const authenticator = new Authenticator<AuthUser>();
 
 const googleStrategy = new GoogleOAuthStrategy(
   {
-    authorizationURL: "https://accounts.google.com/o/oauth2/v2/auth",
-    tokenURL: "https://oauth2.googleapis.com/token",
-    clientID,
+    authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+    tokenEndpoint: "https://oauth2.googleapis.com/token",
+    redirectURI: callbackURL,
+
+    clientId: clientID,
     clientSecret,
-    callbackURL,
-    scope: "openid email profile",
+
+    scopes: ["openid", "email", "profile"],
   },
-  async ({ profile }) => {
+
+  async ({ tokens, request }) => {
+    const profile: GoogleProfile = await googleStrategy.userProfile(tokens.accessToken());
+    console.log("Google OAuth tokens:", tokens, request);
+    console.log("Google OAuth profile:", profile);
     const email = profile.email?.toLowerCase();
     if (!email) {
       throw new Error("Google profile did not include an email");
@@ -61,9 +67,12 @@ const googleStrategy = new GoogleOAuthStrategy(
 authenticator.use(googleStrategy, "google");
 
 export async function requireUser(request: Request) {
-  return authenticator.isAuthenticated(request, {
-    failureRedirect: "/login",
-  });
+  const session = await getSession(request);
+  const user = session.get("user") as AuthUser | undefined;
+  if (!user) {
+    throw redirect("/login");
+  }
+  return user;
 }
 
 export async function requireAuthorizedUser(request: Request) {

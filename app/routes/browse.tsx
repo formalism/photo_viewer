@@ -4,6 +4,7 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import { requireAuthorizedUser } from "~/services/auth.server";
 import {
+  type DbMapping,
   getUserByEmail,
   listMappingsForUser,
 } from "~/db/queries.server";
@@ -16,8 +17,8 @@ import {
   normalizeRelativePath,
 } from "~/services/gallery.server";
 
-function matchMapping(pathname: string, mappings: Array<{ urlPath: string }>) {
-  let best: { urlPath: string } | null = null;
+function matchMapping(pathname: string, mappings: Array<DbMapping>) {
+  let best: DbMapping | null = null;
   for (const mapping of mappings) {
     if (pathname === mapping.urlPath) {
       if (!best || mapping.urlPath.length > best.urlPath.length) {
@@ -46,6 +47,12 @@ export async function loader({ request }: Route.LoaderArgs) {
       mappings: [],
       notFound: true,
       message: "ディレクトリの設定がありません。",
+      basePath: "",
+      currentPath: "",
+      relativePath: "",
+      folders: [],
+      files: [],
+      parentPath: null,
     };
   }
 
@@ -58,6 +65,12 @@ export async function loader({ request }: Route.LoaderArgs) {
       mappings,
       notFound: true,
       message: "対応するディレクトリが見つかりませんでした。",
+      basePath: "",
+      currentPath: "",
+      relativePath: "",
+      folders: [],
+      files: [],
+      parentPath: null,
     };
   }
 

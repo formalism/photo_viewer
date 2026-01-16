@@ -1,11 +1,12 @@
-import { Link } from "react-router";
+import { Link, redirect } from "react-router";
 import type { Route } from "./+types/login";
-import { authenticator } from "~/services/auth.server";
+import { getSession } from "~/services/session.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
-  await authenticator.isAuthenticated(request, {
-    successRedirect: "/",
-  });
+  const session = await getSession(request);
+  if (session.has("user")) {
+    throw redirect("/");
+  }
   return {
     error: new URL(request.url).searchParams.get("error"),
   };
