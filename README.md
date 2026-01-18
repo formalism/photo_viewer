@@ -1,3 +1,38 @@
+# systemdを使ったdeploy方法
+
+/etc/systemd/system/photo-viewer.serviceを以下の内容で作成する。ユーザ名はubuntuとし、/home/ubuntu/photo-viewerディレクトリにてnpm run buildしたものとする。
+
+```
+[Unit]
+Description=Photo Viewer
+After=network.target
+
+[Service]
+# --- 実行ユーザの指定 ---
+User=ubuntu
+Group=ubuntu
+
+# --- 実行コマンドと環境 ---
+WorkingDirectory=/home/ubuntu/photo-viewer
+ExecStart=/bin/bash -c 'source /home/ubuntu/.nvm/nvm.sh && npm run start'
+Restart=on-failure
+
+# --- 再起動の設定 ---
+# 異常終了（終了コード0以外）した際に5秒待って再起動
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+作成後に
+
+```
+sudo systemctl daemon-reload
+sudo systemctl enable photo-viewer.service
+sudo systemctl start photo-viewer.service
+```
+
 # Welcome to React Router!
 
 A modern, production-ready template for building full-stack React applications using React Router.
