@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { useState } from "react";
 import type { Route } from "./+types/browse";
 import path from "node:path";
 import fs from "node:fs/promises";
@@ -148,7 +149,15 @@ export async function loader({ request }: Route.LoaderArgs) {
   };
 }
 
+import { MediaViewer } from "~/components/media-viewer";
+
+/* ------------------------------------------------------------------ */
+/*  Browse page                                                        */
+/* ------------------------------------------------------------------ */
+
 export default function Browse({ loaderData }: Route.ComponentProps) {
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+
   if (loaderData.notFound) {
     return (
       <main className="min-h-screen bg-slate-950 text-slate-100">
@@ -252,11 +261,12 @@ export default function Browse({ loaderData }: Route.ComponentProps) {
             <p className="text-sm text-slate-500">メディアはありません。</p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {loaderData.files.map((file) => (
-                <a
+              {loaderData.files.map((file, index) => (
+                <button
                   key={file.urlPath}
-                  href={file.fileUrl}
-                  className="group flex flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-3 hover:border-slate-600"
+                  type="button"
+                  onClick={() => setViewerIndex(index)}
+                  className="group flex flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-3 text-left hover:border-slate-600"
                 >
                   <div className="relative overflow-hidden rounded-xl bg-slate-950">
                     <img
@@ -273,12 +283,21 @@ export default function Browse({ loaderData }: Route.ComponentProps) {
                   <span className="truncate text-sm text-slate-200">
                     {file.name}
                   </span>
-                </a>
+                </button>
               ))}
             </div>
           )}
         </section>
       </div>
+
+      {viewerIndex !== null && (
+        <MediaViewer
+          files={loaderData.files}
+          currentIndex={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+          onNavigate={setViewerIndex}
+        />
+      )}
     </main>
   );
 }
