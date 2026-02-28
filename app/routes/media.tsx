@@ -43,5 +43,5 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw new Response("Not found", { status: 404 });
   }
 
-  return createFileResponse(resolvedPath);
+  return createFileResponse(resolvedPath, request);
 }

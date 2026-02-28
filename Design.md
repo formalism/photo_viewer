@@ -172,9 +172,19 @@ mappings: { id: integer (PK, auto), userId: integer (FK → users.id, NOT NULL),
 2. `base` と `path` クエリパラメータを取得
 3. `getMappingByUserAndPath()` で当該ユーザが `base` パスへのアクセス権を持つか検証
 4. `normalizeRelativePath()` + `ensureWithinRoot()` でパストラバーサルを防止
-5. `createFileResponse()` で `Content-Type` と `Content-Length` を設定したストリーミングレスポンスを返す
+5. `createFileResponse()` でストリーミングレスポンスを返す
 
 `createFileResponse()` は `fs.createReadStream()` で読み取ったストリームを `createReadableStreamFromReadable()` でWeb標準の `ReadableStream` に変換する。MIMEタイプは `mime-types` パッケージで判定。
+
+### HTTP レンジリクエスト対応
+
+レスポンスの帯域やシーク動作を向上させるため、`createFileResponse()` はオプションで `request` を受け取り、`Range` ヘッダーを処理するようになった。`loader` 側は `return createFileResponse(resolvedPath, request)` と request を渡す。
+
+- `Range: bytes=start-end` を解析し、範囲が妥当であれば `206 Partial Content` として指定範囲のみを返却。ヘッダーとして `Content-Range`・`Content-Length`・`Accept-Ranges: bytes` を付与する。
+- 範囲指定が不正（開始点 >= ファイルサイズなど）の場合は `416 Range Not Satisfiable` と `Content-Range: bytes */<fileSize>` を返す。
+- 範囲指定がないかパースに失敗した場合は従来通り全体を `200 OK` で返し、`Accept-Ranges: bytes` だけを付与する。
+
+これにより動画プレーヤーなどがシークしやすくなり、帯域利用の最適化が可能になる。
 
 ## メディアビューア (media-viewer.tsx)
 
